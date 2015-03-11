@@ -6,6 +6,7 @@ var Ajax = function(years, month, idVisiteur) {
 	this.tabHorsForfait;
 	this.tabIdHorsForfait;
 	this.situation = [];
+	this.etatForfait = '';
 	var self = this;
 
 	this.setMonth = function(month) {
@@ -37,13 +38,18 @@ var Ajax = function(years, month, idVisiteur) {
 	this.majHorsForfaitData = function() {
 		var tabHorsForfait = new Array();
 		var tabIdHorsForfait = new Array();
-
-		$('.tableHorsForfait input').each(function(index){
-			tabHorsForfait[index] = $(this).val();
-			tabIdHorsForfait[index] = $(this).parent().parent().attr('id');
+		var i = 0;
+		$('.tableHorsForfait td').each(function(index){
+			var elem = $(this).children();
+			if ($(elem).attr('value') != undefined) {
+				tabHorsForfait[i] = $(elem).val();
+				tabIdHorsForfait[i] = $(elem).parent().parent().attr('id');
+				i++;
+			}			
 		})
 
 		this.tabHorsForfait = tabHorsForfait;
+		console.log(tabHorsForfait);
 		this.tabIdHorsForfait = tabIdHorsForfait;
 		self.requete();
 		this.tabHorsForfait = undefined;
@@ -60,21 +66,30 @@ var Ajax = function(years, month, idVisiteur) {
 				years: this.years,
 				tabForfait: this.tabForfait,
 				tabHorsForfait: this.tabHorsForfait,
-				tabIdHorsForfait: this.tabIdHorsForfait
+				tabIdHorsForfait: this.tabIdHorsForfait,
+				etatForfait: this.etatForfait
 			}
 		}).success(function( msg ) {
 			$( '#ficheFrai' ).html( msg );
-			$('.tableForfait tr td').change(function() {			
-				self.majForfaitData();				
+
+			$('body').on('click', '.situSave',function(){
+				
+			})
+
+			$('.tableForfait tr td').change(function() {
+				
+				if ($(this).hasClass('etat')) {
+					$('body').on('click', '.situSave',function(){
+						self.etatForfait =  $(this).attr('value');
+						self.majForfaitData();
+					})
+				} else				
+				self.majForfaitData();			
 			});
 
 			$('.tableHorsForfait tr td').change(function() {			
 				self.majHorsForfaitData();				
 			});
-
-			$('table').on('click', 'option', function(){
-				$(this).addClass('check');
-			})
 		});
 	}
 }
@@ -82,7 +97,7 @@ var Ajax = function(years, month, idVisiteur) {
 $(function(){
 	var idVisiteur = $('.lstVisiteur').val();
 	var month = $('.monthValid').val();
-	var years = $('.anneeValid').val();
+	var years = $('.anneeValid').val();	
 
 	var classAjax = new Ajax(years, month, idVisiteur);
 	classAjax.requete();
@@ -103,5 +118,5 @@ $(function(){
 		years = $(this).val();
 		classAjax.setYears(years);
 		classAjax.requete();
-	});
+	});	
 })

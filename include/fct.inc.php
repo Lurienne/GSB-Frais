@@ -275,14 +275,14 @@ function month($month = null) {
 
 function constructArray($array, $arrayId) {
 	$d = 0;
-	$f = 3;
+	$f = 4;
 	$arrayId = array_unique($arrayId);
 	$nbRow = count($array);
-
+	var_dump($arrayId);
 	foreach ($arrayId as $id) {
 		$output[$id] = array_slice($array, $d, $f);
-		$d += 3;
-		$f += 3;
+		$d += 4;
+		// $f += 4;
 	}
 
 	return $output;

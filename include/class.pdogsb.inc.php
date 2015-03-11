@@ -78,7 +78,7 @@ class PdoGsb{
  * @return tous les champs des lignes de frais hors forfait sous la forme d'un tableau associatif 
 */
 	public function getLesFraisHorsForfait($idVisiteur,$mois){
-		$req = "select id, libelle, date, montant, justificatif from lignefraishorsforfait where lignefraishorsforfait.idvisiteur ='$idVisiteur' 
+		$req = "select id, libelle, date, montant, justificatif, idEtat from lignefraishorsforfait where lignefraishorsforfait.idvisiteur ='$idVisiteur' 
 		and lignefraishorsforfait.mois = '$mois' ";	
 		$res = PdoGsb::$monPdo->query($req);
 		$lesLignes = $res->fetchAll();
@@ -140,10 +140,9 @@ class PdoGsb{
 */
 	public function majFraisForfait($idVisiteur, $mois, $lesFrais){
 		$lesCles = array_keys($lesFrais);
-	
 		foreach($lesCles as $unIdFrais){
 			$qte = $lesFrais[$unIdFrais];
-			$req = "update lignefraisforfait set lignefraisforfait.quantite = $qte
+			$req = "update lignefraisforfait set lignefraisforfait.quantite = '$qte'
 			where lignefraisforfait.idvisiteur = '$idVisiteur' and lignefraisforfait.mois = '$mois'
 			and lignefraisforfait.idfraisforfait = '$unIdFrais'";
 			PdoGsb::$monPdo->exec($req);
@@ -153,12 +152,7 @@ class PdoGsb{
 	public function majFraisHorsForfait($lesFrais){
 		foreach ($lesFrais as $key => $frai) {
 			$frai[0] = dateFrancaisVersAnglais($frai[0]);
-			// var_dump($frai[0]);
-			// var_dump($frai[1]);
-			// var_dump($idVisiteur);
-			// var_dump($key);
-			//die;
-			$req = "update lignefraishorsforfait set date = '$frai[0]', libelle = '$frai[1]'
+			$req = "update lignefraishorsforfait set date = '$frai[0]', libelle = '$frai[1]', idEtat = '$frai[3]'
 			where id = '$key'";
 			PdoGsb::$monPdo->exec($req);
 		}			
@@ -219,8 +213,8 @@ class PdoGsb{
 		$dernierMois = $this->dernierMoisSaisi($idVisiteur);
 		$laDerniereFiche = $this->getLesInfosFicheFrais($idVisiteur,$dernierMois);
 		if($laDerniereFiche['idEtat']=='CR'){
-				$this->majEtatFicheFrais($idVisiteur, $dernierMois,'CL');
-				
+				$this->majEtatFicheFrais($idVisiteur, $dernierMois,'CL');			
+				$this->majEtatFraisForfait($idVisiteur, $dernierMois,'CL');			
 		}
 		$req = "insert into fichefrais(idvisiteur,mois,nbJustificatifs,montantValide,dateModif,idEtat) 
 		values('$idVisiteur','$mois',0,0,now(),'CR')";
@@ -309,9 +303,14 @@ class PdoGsb{
  
 	public function majEtatFicheFrais($idVisiteur,$mois,$etat){
 		$req = "update ficheFrais set idEtat = '$etat', dateModif = now() 
-		where fichefrais.idvisiteur ='$idVisiteur' and fichefrais.mois = '$mois'";
+		where fichefrais.idVisiteur ='$idVisiteur' and fichefrais.mois = '$mois'";
 		PdoGsb::$monPdo->exec($req);
 	}
 
+	public function majEtatFraisForfait($idVisiteur,$mois,$etat){
+		$req = "update lignefraishorsforfait set idEtat = '$etat', dateModif = now() 
+		where idVisiteur ='$idVisiteur' and mois = '$mois'";
+		PdoGsb::$monPdo->exec($req);
+	}
 }
 ?>
